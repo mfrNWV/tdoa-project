@@ -94,21 +94,6 @@ class MicArray(object):
                 tau[i], _ = gcc_phat(buf[v[0]::4], buf[v[1]::4], fs=self.sample_rate, max_tau=MAX_TDOA_4, interp=1)
                 theta[i] = math.asin(tau[i] / MAX_TDOA_4) * 180 / math.pi
 
-            # if np.abs(theta[0]) < np.abs(theta[1]):
-                # if theta[1] > 0:
-                    # best_guess = (theta[0] + 360) % 360
-                # else:
-                    # best_guess = (180 - theta[0])
-            # else:
-                # if theta[0] < 0:
-                    # best_guess = (theta[1] + 360) % 360
-                # else:
-                    # best_guess = (180 - theta[1])
-
-                # best_guess = (best_guess + 90 + 180) % 360
-
-
-            #best_guess = (-best_guess + 120) % 360
             return theta[0], theta[1]
              
         elif self.channels == 2:

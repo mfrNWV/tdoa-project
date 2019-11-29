@@ -40,8 +40,8 @@ def main():
                     if speech_count > (doa_chunks / 2):
                         frames = np.concatenate(chunks)
                         direction = mic.get_direction(frames)
-                        #servodir = int(6273 - 45.5*horizontal)
-                        #servo.setTarget(0,servodir)
+                        servodir = int(6273 + 45.5*direction)
+                        servo.setTarget(0,servodir)
                         print('\n{}'.format(int(direction)))
 
                     speech_count = 0
