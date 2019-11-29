@@ -1,12 +1,10 @@
 
-
 import pyaudio
 import Queue
 import threading
 import numpy as np
 from gcc_phat import gcc_phat
 import math
-
 
 SOUND_SPEED = 343.2
 
@@ -15,8 +13,6 @@ MAX_TDOA_6P1 = MIC_DISTANCE_6P1 / float(SOUND_SPEED)
 
 MIC_DISTANCE_4 = 0.08127
 MAX_TDOA_4 = MIC_DISTANCE_4 / float(SOUND_SPEED)
-
-
 
 class MicArray(object):
 
@@ -87,26 +83,8 @@ class MicArray(object):
 
     def get_direction(self, buf):
         best_guess = None
-        if self.channels == 8:
-            MIC_GROUP_N = 3
-            MIC_GROUP = [[1, 4], [2, 5], [3, 6]]
-
-            tau = [0] * MIC_GROUP_N
-            theta = [0] * MIC_GROUP_N
-
-            # buf = np.fromstring(buf, dtype='int16')
-            for i, v in enumerate(MIC_GROUP):
-                tau[i], _ = gcc_phat(buf[v[0]::8], buf[v[1]::8], fs=self.sample_rate, max_tau=MAX_TDOA_6P1, interp=1)
-                theta[i] = math.asin(tau[i] / MAX_TDOA_6P1) * 180 / math.pi
-
-            min_index = np.argmin(np.abs(tau))
-            if (min_index != 0 and theta[min_index - 1] >= 0) or (min_index == 0 and theta[MIC_GROUP_N - 1] < 0):
-                best_guess = (theta[min_index] + 360) % 360
-            else:
-                best_guess = (180 - theta[min_index])
-
-            best_guess = (best_guess + 120 + min_index * 60) % 360
-        elif self.channels == 4:
+        
+        if self.channels == 4:
             MIC_GROUP_N = 2
             MIC_GROUP = [[0, 2], [1, 3]]
 
@@ -116,22 +94,21 @@ class MicArray(object):
                 tau[i], _ = gcc_phat(buf[v[0]::4], buf[v[1]::4], fs=self.sample_rate, max_tau=MAX_TDOA_4, interp=1)
                 theta[i] = math.asin(tau[i] / MAX_TDOA_4) * 180 / math.pi
 
-            # if np.abs(theta[0]) < np.abs(theta[1]):
-                # if theta[1] > 0:
-                    # best_guess = (theta[0] + 360) % 360
-                # else:
-                    # best_guess = (180 - theta[0])
-            # else:
-                # if theta[0] < 0:
-                    # best_guess = (theta[1] + 360) % 360
-                # else:
-                    # best_guess = (180 - theta[1])
+            if np.abs(theta[0]) < np.abs(theta[1]):
+                if theta[1] > 0:
+                    best_guess = (theta[0] + 360) % 360
+                else:
+                    best_guess = (180 - theta[0])
+            else:
+                if theta[0] < 0:
+                    best_guess = (theta[1] + 360) % 360
+                else:
+                    best_guess = (180 - theta[1])
 
-                # best_guess = (best_guess + 90 + 180) % 360
+                best_guess = (best_guess + 90 + 180) % 360
 
 
-            #best_guess = (-best_guess + 120) % 360
-            return theta[0], theta[1]
+            best_guess = (120 - best_guess) % 360 
              
         elif self.channels == 2:
             pass
